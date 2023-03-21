@@ -1,0 +1,93 @@
+#!/usr/bin/python3
+## \date 2023
+## \author Tom Robinson
+## \email thomas.robinson@noaa.gov
+## \description fremake is used to create and run a code checkout script and compile a model.
+
+import subprocess
+import os
+import yaml
+
+checkoutScriptName = "checkout.sh"
+
+## Open the yaml file and parse as fremakeYaml
+with open('compile.yaml', 'r') as file:
+     fremakeYaml = yaml.safe_load(file)
+file.close()
+## Check the yaml for required things
+## Check for required experiment name
+try:
+     fremakeYaml["experiment"]
+except:
+     print("You must set an experiment name in the yaml")
+     raise
+## Check for required src
+try:
+     fremakeYaml["src"]
+except:
+     print("You must set a src in the yaml")
+     raise
+## Loop through the src array
+for c in fremakeYaml['src']:
+## Check for required componenet name
+     try:
+          c['component']
+     except:
+          print("You must set the 'componet' for each src component")
+          raise
+## Check for required repo url
+     try:
+          c['repo']
+     except:
+          print("You must set the'repo' for each src component")
+          raise
+# Check for optional branch. Otherwise set it to blank
+     try:
+          c['branch']
+     except:
+          c['branch']=""
+# Check for optional cppdefs. Otherwise set it to blank
+     try:
+          c['cppdefs']
+     except:
+          c['cppdefs']=""
+# Check for optional doF90Cpp. Otherwise set it to False
+     try:
+          c['doF90Cpp']
+     except:
+          c['doF90Cpp']=False
+# Check for optional additional instructions. Otherwise set it to blank
+     try:
+          c['additionalInstructions']
+     except:
+          c['additionalInstructions']=""
+# Check for optional paths. Otherwise set it to blank
+     try:
+          c['paths']
+     except:
+          c['paths']=c['component']
+# Check for optional requires. Otherwise set it to blank
+     try:
+          c['requires']
+     except:
+          c['requires']=""
+## Open the checkout script and write the shebang
+checkoutScript = open(checkoutScriptName, 'w')
+checkoutScript.write("#!/bin/sh -fx \n")
+## Create the checkout script based on the information in the yaml
+for c in fremakeYaml['src']:
+     checkoutScript.write("echo cloning "+c['component']+" "+c['branch']+"\n")
+     if c['branch']=="":
+          checkoutScript.write("git clone --recursive "+c['repo']+"\n")
+     else:
+          checkoutScript.write("git clone --recursive "+c['repo']+" -b "+c['branch']+"\n")
+     if c['additionalInstructions']!="":
+          checkoutScript.write(c['additionalInstructions'])
+checkoutScript.close()
+## Run the checkout script
+os.chmod(checkoutScriptName, 0o744)
+try:
+     subprocess.run(args=["./"+checkoutScriptName], check=True)
+except:
+     print("There was an error with the checkout script "+checkoutScriptName)
+     raise
