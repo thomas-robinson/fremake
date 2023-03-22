@@ -7,13 +7,16 @@
 import subprocess
 import os
 import yaml
+from yamlfre import *
+from checkout import *
+from buildDocker import *
 
+compileYaml = "compile.yaml"
+srcDir="src"
 checkoutScriptName = "checkout.sh"
-
+#os.mkdir(srcDir)
 ## Open the yaml file and parse as fremakeYaml
-with open('compile.yaml', 'r') as file:
-     fremakeYaml = yaml.safe_load(file)
-file.close()
+fremakeYaml = parseCompile(compileYaml)
 ## Check the yaml for required things
 ## Check for required experiment name
 try:
@@ -65,29 +68,29 @@ for c in fremakeYaml['src']:
      try:
           c['paths']
      except:
-          c['paths']=c['component']
+          c['paths']=[c['component']]
 # Check for optional requires. Otherwise set it to blank
      try:
           c['requires']
      except:
-          c['requires']=""
-## Open the checkout script and write the shebang
-checkoutScript = open(checkoutScriptName, 'w')
-checkoutScript.write("#!/bin/sh -fx \n")
-## Create the checkout script based on the information in the yaml
-for c in fremakeYaml['src']:
-     checkoutScript.write("echo cloning "+c['component']+" "+c['branch']+"\n")
-     if c['branch']=="":
-          checkoutScript.write("git clone --recursive "+c['repo']+"\n")
-     else:
-          checkoutScript.write("git clone --recursive "+c['repo']+" -b "+c['branch']+"\n")
-     if c['additionalInstructions']!="":
-          checkoutScript.write(c['additionalInstructions'])
-checkoutScript.close()
+          c['requires']=[]
+## Write the checkout script
+checkoutScript = checkout(checkoutScriptName)
+checkoutScript.writeCheckout(fremakeYaml)
+checkoutScript.finish()
 ## Run the checkout script
-os.chmod(checkoutScriptName, 0o744)
-try:
-     subprocess.run(args=["./"+checkoutScriptName], check=True)
-except:
-     print("There was an error with the checkout script "+checkoutScriptName)
-     raise
+image="hpc-me-intel:2021.1.1"
+dockerBuild = container(image,fremakeYaml["experiment"])
+dockerBuild.writeDockerfileCheckout()
+for c in fremakeYaml['src']:
+     dockerBuild.writeDockerfileMkmf(c)
+
+dockerBuild.build()
+#buildDockerfile(fremakeYaml,image)
+quit()
+os.system("podman build -f Dockerfile -t "+fremakeYaml["experiment"]+":latest")
+#try:
+#     subprocess.run(args=["./"+checkoutScriptName], check=True)
+#except:
+#     print("There was an error with the checkout script "+checkoutScriptName)
+#     raise
