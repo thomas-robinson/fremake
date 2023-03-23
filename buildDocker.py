@@ -19,16 +19,17 @@ class container():
      self.src = "/apps/"+self.e+"/src"
      self.bld = "/apps/"+self.e+"/exec"
      self.mkmf = True
-     self.template = "/apps/mkmf/tmplates/hpcme-intel21.mk"
+     self.template = "/apps/mkmf/templates/hpcme-intel21.mk"
      self.setup=[   "RUN . /opt/intel/oneapi/setvars.sh \\ \n",
                     " && . /spack/share/spack/setup-env.sh \\ \n"]
      self.mkmfclone=["RUN cd /apps \\ \n",
                     " && git clone --recursive https://github.com/NOAA-GFDL/mkmf \\ \n",
                     " && cp mkmf/bin/* /usr/local/bin \n"]
-     self.bldsetup=["RUN mkdir -p "+self.bld+" \n", 
-                    "RUN bld_dir="+self.bld+" \\ \n", 
+     self.bldsetup=["RUN bld_dir="+self.bld+" \\ \n", 
                     " && src_dir="+self.src+" \\ \n",
                     " && mkmf_template="+self.template+ " \\ \n"]
+     self.bldCreate=["RUN mkdir -p "+self.bld+" \n",
+                     "COPY Makefile "+self.bld+" \n"]
      self.d=open("Dockerfile","w")
 ## \brief writes to the checkout part of the Dockerfile
 ## \param self The dockerfile object
@@ -38,7 +39,10 @@ class container():
      self.d.write("RUN chmod 744 /apps/"+self.e+"/src/checkout.sh \n")
      self.d.writelines(self.setup)
      self.d.write(" && /apps/"+self.e+"/src/checkout.sh \n")
+# Clone mkmf
      self.d.writelines(self.mkmfclone)
+# Set up the bldDir     
+     self.d.writelines(self.bldCreate)
 ## \brief Adds components to the build part of the Dockerfile
 ## \param self The dockerfile object
 ## \param c Component from the compile yaml
@@ -74,5 +78,10 @@ class container():
 ## Builds the container image for the model
 ## \param self The dockerfile object
  def build(self):
+     self.d.write("RUN cd "+self.bld+" && cat Makefile\n")
+#     self.d.write("RUN cd "+self.bld+" && make "+self.e+"\n")
+     self.d.write('ENTRYPOINT ["/bin/bash"]')
      self.d.close()
      os.system("podman build -f Dockerfile -t "+self.e+":latest")
+     os.system("podman save -o "+self.e+".tar localhost/"+self.e)
+     os.system("apptainer build --disable-cache "+self.e+".sif docker-archive://"+self.e+".tar")

@@ -9,6 +9,7 @@ import os
 import yaml
 from yamlfre import *
 from checkout import *
+from makefilefre import *
 from buildDocker import *
 
 compileYaml = "compile.yaml"
@@ -78,6 +79,11 @@ for c in fremakeYaml['src']:
 checkoutScript = checkout(checkoutScriptName)
 checkoutScript.writeCheckout(fremakeYaml)
 checkoutScript.finish()
+## Create the Makefile
+freMakefile = makefile(fremakeYaml["experiment"])
+for c in fremakeYaml['src']:
+     freMakefile.addComponet(c['component'],c['requires'])
+freMakefile.writeMakefile()
 ## Run the checkout script
 image="hpc-me-intel:2021.1.1"
 dockerBuild = container(image,fremakeYaml["experiment"])
