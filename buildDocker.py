@@ -55,12 +55,12 @@ class container():
           pstring = pstring+"$src_dir/"+paths+" "
 # Run list_paths
      self.d.write(" && list_paths -l -o $bld_dir/"+comp+"/pathnames_"+comp+" "+pstring+" \\ \n")
-     self.d.write(" && cd $bld_dir/"+comp+" \\n")
+     self.d.write(" && cd $bld_dir/"+comp+" \\ \n")
 # Create the mkmf line
      if c["requires"] == [] and c["doF90Cpp"]: # If this lib doesnt have any code dependencies and it requires the preprocessor (no -o and yes --use-cpp)
-          self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template --use-cpp -c \""+c["cppdefs"]+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
+          self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template --use-cpp -c \""+c["cppdefs"]+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/mom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
      elif c["requires"] == []: # If this lib doesnt have any code dependencies (no -o)
-          self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template -c \""+c["cppdefs"]+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
+          self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template -c \""+c["cppdefs"]+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/mom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
      else: #Has requirements
 #Set up the requirements as a string to inclue after the -o
           reqstring = ""
@@ -68,9 +68,9 @@ class container():
                reqstring = reqstring+"-I$bld_dir/"+r+" "
 #Figure out if we need the preprocessor
           if c["doF90Cpp"]:
-               self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template --use-cpp -c \""+c["cppdefs"]+"\" -o \""+reqstring+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
+               self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template --use-cpp -c \""+c["cppdefs"]+"\" -o \""+reqstring+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/mom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
           else:
-               self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template -c \""+c["cppdefs"]+"\" -o \""+reqstring+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
+               self.d.write(" && mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template -c \""+c["cppdefs"]+"\" -o \""+reqstring+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/mom6/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
 ## Builds the container image for the model
 ## \param self The dockerfile object
  def build(self):

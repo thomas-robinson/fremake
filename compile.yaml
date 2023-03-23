@@ -8,23 +8,23 @@ src:
        requires: ["FMS"]
        repo: "https://gitlab.gfdl.noaa.gov/FMS/am5_phys.git"
        branch: "2022.01"
-     - component: "atmos_cubed_sphere"
+     - component: "GFDL_atmos_cubed_sphere"
        requires: ["FMS", "am5_phys"]
        repo: "https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git"
        cppdefs: "-DSPMD -DCLIMATE_NUDGE"
        branch: "2022.01"
-       paths: "GFDL_atmos_cubed_sphere/driver/GFDL
-               GFDL_atmos_cubed_sphere/model
-               GFDL_atmos_cubed_sphere/driver/SHiELD/cloud_diagnosis.F90
-               GFDL_atmos_cubed_sphere/driver/SHiELD/gfdl_cloud_microphys.F90
-               GFDL_atmos_cubed_sphere/tools
-               GFDL_atmos_cubed_sphere/GFDL_tools"
-     - component: "atmos_driver"
-       requires: ["FMS", "am5_phys", "atmos_cubed_sphere"]
+       paths: ["GFDL_atmos_cubed_sphere/driver/GFDL",
+              "GFDL_atmos_cubed_sphere/model",
+              "GFDL_atmos_cubed_sphere/driver/SHiELD/cloud_diagnosis.F90",
+              "GFDL_atmos_cubed_sphere/driver/SHiELD/gfdl_cloud_microphys.F90",
+              "GFDL_atmos_cubed_sphere/tools",
+              "GFDL_atmos_cubed_sphere/GFDL_tools"]
+     - component: "atmos_drivers"
+       requires: ["FMS", "am5_phys", "GFDL_atmos_cubed_sphere"]
        repo: "https://github.com/NOAA-GFDL/atmos_drivers.git"
        cppdefs: "-DSPMD -DCLIMATE_NUDGE"
        branch: "main"
-       paths: "atmos_drivers/coupled"
+       paths: ["atmos_drivers/coupled"]
      - component: "ice_sis"
        requires: ["FMS", "ice_param", "mom6"]
        repo: "https://gitlab.gfdl.noaa.gov/FMS/ice_sis.git"
@@ -42,27 +42,28 @@ src:
        doF90Cpp: True
      - component: "mom6"
        requires: ["FMS"]
-       paths: "mom6/src/MOM6/config_src/dynamic mom6/src/MOM6/config_src/coupled_driver mom6/src/MOM6/src/*/ mom6/src/MOM6/src/*/*/ ocean_BGC/generic_tracers ocean_BGC/mocsy/src"
+       paths: ["mom6/mom6/src/MOM6/config_src/dynamic", "mom6/mom6/src/MOM6/config_src/coupled_driver", "mom6/mom6/src/MOM6/src/*/", "mom6/mom6/src/MOM6/src/*/*/", "mom6/ocean_BGC/generic_tracers", "mom6/ocean_BGC/mocsy/src"]
        branch: "2021.02"
        repo: "https://github.com/NOAA-GFDL/ocean_BGC.git"
        additionalInstructions: " \n
           MOM6_GIT_TAG=dev/gfdl/2018.04.06 \n
+          cd mom6 \n
           git clone -b ${MOM6_GIT_TAG} https://github.com/NOAA-GFDL/MOM6-examples.git mom6 \n
-          pushd mom6 \n
+          cd mom6 \n
           git checkout ${MOM6_GIT_TAG} \n
           git submodule init src/MOM6 src/SIS2 src/icebergs tools/python/MIDAS \n
           git clone --recursive https://github.com/NOAA-GFDL/MOM6.git src/MOM6 \n
           git clone             https://github.com/NOAA-GFDL/SIS2.git src/SIS2 \n
-          git clone             https://github.com/NOAA-GFDL/icebergs.git src/icebergs n\
-          git submodule update n\
-          popd \n
-          pushd mom6 \n
+          git clone             https://github.com/NOAA-GFDL/icebergs.git src/icebergs \n
+          git submodule update \n
             ln -s $PDATA/gfdl/gfdl_O/datasets/ .datasets \n
           popd   \n
           test -e mom6/.datasets \n
           if [$status != 0]; then \n
             echo   WARNING:  .datasets link in MOM6 examples directory is invalid \n
           fi \n
+          cd - \n
+          cd .. \n
        "
      - component: "FMScoupler"
        repo: "https://github.com/NOAA-GFDL/FMScoupler.git"
