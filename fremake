@@ -81,9 +81,11 @@ checkoutScript.writeCheckout(fremakeYaml)
 checkoutScript.finish()
 ## Create the Makefile
 freMakefile = makefile(fremakeYaml["experiment"])
+# Loop through compenents and send the component name and requires for the Makefile
 for c in fremakeYaml['src']:
      freMakefile.addComponet(c['component'],c['requires'])
 freMakefile.writeMakefile()
+freMakefile.finish()
 ## Run the checkout script
 image="hpc-me-intel:2021.1.1"
 dockerBuild = container(image,fremakeYaml["experiment"])

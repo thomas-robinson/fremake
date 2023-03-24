@@ -21,7 +21,9 @@ class container():
      self.mkmf = True
      self.template = "/apps/mkmf/templates/hpcme-intel21.mk"
      self.setup=[   "RUN . /opt/intel/oneapi/setvars.sh \\ \n",
-                    " && . /spack/share/spack/setup-env.sh \\ \n"]
+                    " && . /spack/share/spack/setup-env.sh \\ \n",
+                    " && spack compiler find \\ \n",
+                    " && spack load libtool && spack load hdf5 && spack load netcdf-c && spack load netcdf-fortran && spack load libyaml \\ \n"]
      self.mkmfclone=["RUN cd /apps \\ \n",
                     " && git clone --recursive https://github.com/NOAA-GFDL/mkmf \\ \n",
                     " && cp mkmf/bin/* /usr/local/bin \n"]
@@ -29,9 +31,9 @@ class container():
                     " && src_dir="+self.src+" \\ \n",
                     " && mkmf_template="+self.template+ " \\ \n"]
      self.bldCreate=["RUN mkdir -p "+self.bld+" \n",
-                     "COPY Makefile "+self.bld+" \n"]
+                     "COPY Makefile "+self.bld+"/Makefile \n"]
      self.d=open("Dockerfile","w")
-## \brief writes to the checkout part of the Dockerfile
+## \brief writes to the checkout part of the Dockerfile and sets up the compile
 ## \param self The dockerfile object
  def writeDockerfileCheckout(self):
      self.d.writelines("FROM "+self.base+" \n")
@@ -78,10 +80,11 @@ class container():
 ## Builds the container image for the model
 ## \param self The dockerfile object
  def build(self):
-     self.d.write("RUN cd "+self.bld+" && cat Makefile\n")
-#     self.d.write("RUN cd "+self.bld+" && make "+self.e+"\n")
+     self.d.writelines(self.setup)
+     self.d.write(" && cd "+self.bld+" && make \n")
      self.d.write('ENTRYPOINT ["/bin/bash"]')
      self.d.close()
      os.system("podman build -f Dockerfile -t "+self.e+":latest")
+     os.system("rm -f "+self.e+".tar "+self.e+".sif")
      os.system("podman save -o "+self.e+".tar localhost/"+self.e)
      os.system("apptainer build --disable-cache "+self.e+".sif docker-archive://"+self.e+".tar")
