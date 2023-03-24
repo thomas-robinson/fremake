@@ -2,7 +2,7 @@ experiment: "cm5p0.x"
 src:
      - component: "FMS"
        repo: "https://github.com/NOAA-GFDL/FMS.git"
-       cppdefs: "-Duse_yaml -Duse_libMPI -Duse_netCDF"
+       cppdefs: "-Duse_libMPI -Duse_netCDF"
        branch: "2022.01"
      - component: "am5_phys"
        requires: ["FMS"]
@@ -42,29 +42,9 @@ src:
        doF90Cpp: True
      - component: "mom6"
        requires: ["FMS"]
-       paths: ["mom6/mom6/src/MOM6/config_src/dynamic", "mom6/mom6/src/MOM6/config_src/coupled_driver", "mom6/mom6/src/MOM6/src/*/", "mom6/mom6/src/MOM6/src/*/*/", "mom6/ocean_BGC/generic_tracers", "mom6/ocean_BGC/mocsy/src"]
-       branch: "2021.02"
-       repo: "https://github.com/NOAA-GFDL/ocean_BGC.git"
-       additionalInstructions: " \n
-          MOM6_GIT_TAG=dev/gfdl/2018.04.06 \n
-          cd mom6 \n
-          git clone -b ${MOM6_GIT_TAG} https://github.com/NOAA-GFDL/MOM6-examples.git mom6 \n
-          cd mom6 \n
-          git checkout ${MOM6_GIT_TAG} \n
-          git submodule init src/MOM6 src/SIS2 src/icebergs tools/python/MIDAS \n
-          git clone --recursive https://github.com/NOAA-GFDL/MOM6.git src/MOM6 \n
-          git clone             https://github.com/NOAA-GFDL/SIS2.git src/SIS2 \n
-          git clone             https://github.com/NOAA-GFDL/icebergs.git src/icebergs \n
-          git submodule update \n
-            ln -s $PDATA/gfdl/gfdl_O/datasets/ .datasets \n
-          popd   \n
-          test -e mom6/.datasets \n
-          if [$status != 0]; then \n
-            echo   WARNING:  .datasets link in MOM6 examples directory is invalid \n
-          fi \n
-          cd - \n
-          cd .. \n
-       "
+       paths: ["mom6/MOM6-examples/src/MOM6/config_src/dynamic", "mom6/MOM6-examples/src/MOM6/config_src/coupled_driver", "mom6/MOM6-examples/src/MOM6/src/*/", "mom6/MOM6-examples/src/MOM6/src/*/*/", "mom6/ocean_BGC/generic_tracers", "mom6/ocean_BGC/mocsy/src"]
+       branch: ["2021.02","dev/gfdl/2018.04.06"]
+       repo: ["https://github.com/NOAA-GFDL/ocean_BGC.git","https://github.com/NOAA-GFDL/MOM6-examples.git"]
      - component: "FMScoupler"
        repo: "https://github.com/NOAA-GFDL/FMScoupler.git"
        branch: "2022.01"

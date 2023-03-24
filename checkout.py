@@ -1,6 +1,30 @@
 import yaml
 
 srcDir="/apps"
+
+def writeRepo(file,repo,component,srcDir,branch,add,multi):
+## Write message about cloning repo and branch in component
+     file.write("echo cloning "+repo+" -b "+branch+" into "+srcDir+"/"+component+"\n")
+## If this component has multiple repos, clone everything in the component folder
+## If it's not multi, then use the component name (comp) as the folder name to clone into
+     if multi:
+          file.write("mkdir -p "+component+"\n")
+          file.write("cd "+component+"\n")
+          comp=""
+     else:
+          comp=component
+## Check if there is a branch/version and then write the clone line
+     if branch=="":
+          file.write("git clone --recursive "+repo+" "+comp+"\n")
+     else:
+          file.write("git clone --recursive "+repo+" -b "+branch+" "+comp+"\n")
+## Make sure to go back up in the folder structure
+     if multi:
+          file.write("cd .. \n")
+     if add!="":
+          file.write(add)
+
+
 ## Class to create the checkout script
 class checkout():
 ## \brief Opens the checkout script with the specified name
@@ -16,12 +40,17 @@ class checkout():
  def writeCheckout(self,y):
    self.checkoutScript.write("cd  /apps/"+y["experiment"]+"/src \n")
    for c in y['src']:
-     self.checkoutScript.write("echo cloning "+c['repo']+" -b "+c['branch']+" into "+srcDir+"/"+c['component']+"\n")
-     if c['branch']=="":
-          self.checkoutScript.write("git clone --recursive "+c['repo']+" "+c['component']+"\n")
+     if type(c['repo']) is list and type(c['branch']) is list:
+          for (repo,branch) in zip(c['repo'],c['branch']):
+               writeRepo(self.checkoutScript,repo,c['component'],srcDir,branch,c['additionalInstructions'],True)
      else:
-          self.checkoutScript.write("git clone --recursive "+c['repo']+" -b "+c['branch']+" "+c['component']+"\n")
-     if c['additionalInstructions']!="":
+          writeRepo(self.checkoutScript,c['repo'],c['component'],srcDir,c['branch'],c['additionalInstructions'],False)
+#          self.checkoutScript.write("echo cloning "+c['repo']+" -b "+c['branch']+" into "+srcDir+"/"+c['component']+"\n")
+#          if c['branch']=="":
+#               self.checkoutScript.write("git clone --recursive "+c['repo']+" "+c['component']+"\n")
+#          else:
+#               self.checkoutScript.write("git clone --recursive "+c['repo']+" -b "+c['branch']+" "+c['component']+"\n")
+#     if c['additionalInstructions']!="":
           self.checkoutScript.write(c['additionalInstructions'])
 ## \brief Closes the checkout script when writing is done
 ## \param self The checkout script object

@@ -92,7 +92,6 @@ dockerBuild = container(image,fremakeYaml["experiment"])
 dockerBuild.writeDockerfileCheckout()
 for c in fremakeYaml['src']:
      dockerBuild.writeDockerfileMkmf(c)
-
 dockerBuild.build()
 #buildDockerfile(fremakeYaml,image)
 quit()
