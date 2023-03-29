@@ -8,6 +8,7 @@ import subprocess
 import os
 import yaml
 from yamlfre import *
+from platform import *
 from checkout import *
 from makefilefre import *
 from buildDocker import *
@@ -75,6 +76,10 @@ for c in fremakeYaml['src']:
           c['requires']
      except:
           c['requires']=[]
+## Get the platform information
+platforms = platforms("platforms.yaml")
+(compiler,modules,fc,cc,container,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc5.intel")
+quit()
 ## Write the checkout script
 checkoutScript = checkout(checkoutScriptName)
 checkoutScript.writeCheckout(fremakeYaml)
