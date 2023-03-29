@@ -1,0 +1,14 @@
+platforms:
+   - name: ncrc5.intel
+     compiler: intel
+     modules: ["intel/2022.2.1","cray-netcdf","cray-hdf5"]
+     fc: ftn
+     cc: cc
+   - name: hpcme.2021
+     compiler: intel
+     fc: mpiifort
+     cc: mpiicc
+     container: True
+     containerBuild: "podman"
+     containerRun: "apptainer"
+          
