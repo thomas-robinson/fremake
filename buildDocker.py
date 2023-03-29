@@ -81,7 +81,7 @@ class container():
 ## \param self The dockerfile object
  def build(self):
      self.d.writelines(self.setup)
-     self.d.write(" && cd "+self.bld+" && make \n")
+     self.d.write(" && cd "+self.bld+" && make -j 4 \n")
      self.d.write('ENTRYPOINT ["/bin/bash"]')
      self.d.close()
      os.system("podman build -f Dockerfile -t "+self.e+":latest")
