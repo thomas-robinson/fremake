@@ -1,4 +1,4 @@
-experiment: "cm5p0.x"
+experiment: "am5"
 src:
      - component: "FMS"
        repo: "https://github.com/NOAA-GFDL/FMS.git"

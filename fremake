@@ -9,81 +9,24 @@ import os
 import yaml
 from yamlfre import *
 from platform import *
-from checkout import *
+from checkoutContainer import *
 from makefilefre import *
 from buildDocker import *
 
-compileYaml = "compile.yaml"
+compileYaml = "yamls/compile.yaml"
+platformsYaml = "yamls/platforms.yaml"
 srcDir="src"
 checkoutScriptName = "checkout.sh"
 #os.mkdir(srcDir)
 ## Open the yaml file and parse as fremakeYaml
 fremakeYaml = parseCompile(compileYaml)
-## Check the yaml for required things
-## Check for required experiment name
-try:
-     fremakeYaml["experiment"]
-except:
-     print("You must set an experiment name in the yaml")
-     raise
-## Check for required src
-try:
-     fremakeYaml["src"]
-except:
-     print("You must set a src in the yaml")
-     raise
-## Loop through the src array
-for c in fremakeYaml['src']:
-## Check for required componenet name
-     try:
-          c['component']
-     except:
-          print("You must set the 'componet' for each src component")
-          raise
-## Check for required repo url
-     try:
-          c['repo']
-     except:
-          print("You must set the'repo' for each src component")
-          raise
-# Check for optional branch. Otherwise set it to blank
-     try:
-          c['branch']
-     except:
-          c['branch']=""
-# Check for optional cppdefs. Otherwise set it to blank
-     try:
-          c['cppdefs']
-     except:
-          c['cppdefs']=""
-# Check for optional doF90Cpp. Otherwise set it to False
-     try:
-          c['doF90Cpp']
-     except:
-          c['doF90Cpp']=False
-# Check for optional additional instructions. Otherwise set it to blank
-     try:
-          c['additionalInstructions']
-     except:
-          c['additionalInstructions']=""
-# Check for optional paths. Otherwise set it to blank
-     try:
-          c['paths']
-     except:
-          c['paths']=[c['component']]
-# Check for optional requires. Otherwise set it to blank
-     try:
-          c['requires']
-     except:
-          c['requires']=[]
-## Get the platform information
-platforms = platforms("platforms.yaml")
+## Parse the platforms
+platforms = platforms(platformsYaml)
 (compiler,modules,fc,cc,container,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc5.intel")
+## Create the checkout script
+freCheckout = checkoutContainer(compileYaml)
+freCheckout.writeCheckout()
 quit()
-## Write the checkout script
-checkoutScript = checkout(checkoutScriptName)
-checkoutScript.writeCheckout(fremakeYaml)
-checkoutScript.finish()
 ## Create the Makefile
 freMakefile = makefile(fremakeYaml["experiment"])
 # Loop through compenents and send the component name and requires for the Makefile
