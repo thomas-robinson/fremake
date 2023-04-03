@@ -4,6 +4,7 @@ platforms:
      modules: ["intel/2022.2.1","cray-netcdf","cray-hdf5"]
      fc: ftn
      cc: cc
+     mkTemplate: "/ncrc/home2/fms/local/opt/fre-commands/bronx-20/site/ncrc5/intel-classic.mk"
    - name: hpcme.2021
      compiler: intel
      fc: mpiifort

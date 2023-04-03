@@ -68,7 +68,14 @@ class platforms ():
                     raise
                if p["containerRun"] != "apptainer":
                     raise ValueError("Container builds only supported with apptainer, but you listed "+p["containerRun"]+"\n")
+## set the location of the mkTemplate.  In a container, it uses the hpc-me template cloned from mkmf
+               p["mkTemplate"] = "/apps/mkmf/templates/hpcme-intel21.mk"
+          else:
+               try:
+                    p["mkTemplate"]
+               except:
+                    raise ValueError("The non-container platform "+p["name"]+" must specify a mkTemplate \n")
  def getPlatformFromName(self,name):
      for p in self.yaml["platforms"]:
           if p["name"] == name:
-               return (p["compiler"], p["modules"], p["fc"], p["cc"], p["container"], p["containerBuild"], p["containerRun"])
+               return (p["compiler"], p["modules"], p["fc"], p["cc"], p["container"], p["mkTemplate"],p["containerBuild"], p["containerRun"])

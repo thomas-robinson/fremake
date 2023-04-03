@@ -22,7 +22,8 @@ checkoutScriptName = "checkout.sh"
 fremakeYaml = parseCompile(compileYaml)
 ## Parse the platforms
 platforms = platforms(platformsYaml)
-(compiler,modules,fc,cc,container,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc5.intel")
+(compiler,modules,fc,cc,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc5.intel")
+print (mkTemplate)
 ## Create the checkout script
 freCheckout = checkoutContainer(compileYaml)
 freCheckout.writeCheckout()
