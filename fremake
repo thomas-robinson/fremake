@@ -12,6 +12,7 @@ from platform import *
 from checkoutContainer import *
 from makefilefre import *
 from buildDocker import *
+from buildBaremetal import *
 
 compileYaml = "yamls/compile.yaml"
 platformsYaml = "yamls/platforms.yaml"
@@ -19,22 +20,41 @@ srcDir="src"
 checkoutScriptName = "checkout.sh"
 #os.mkdir(srcDir)
 ## Open the yaml file and parse as fremakeYaml
-fremakeYaml = parseCompile(compileYaml)
+fremakeCheckCompileYaml = parseCompile(compileYaml)
+platYaml = parseCompile(platformsYaml)
+#fremakeYaml.update(pyaml)
+
 ## Parse the platforms
 platforms = platforms(platformsYaml)
-(compiler,modules,fc,cc,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc5.intel")
-print (mkTemplate)
-## Create the checkout script
-freCheckout = checkoutContainer(compileYaml)
-freCheckout.writeCheckout()
+(compiler,modules,modulesInit,fc,cc,buildRoot,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc4.intel")
+## Check for type of build
+if container == "":
+     ## Create the checkout script
+     freCheckout = checkoutContainer(compileYaml,buildRoot)
+     freCheckout.writeCheckout()
+     #Get the yaml filled out
+     fremakeYaml = freCheckout.getYaml()
+
+     ## Create the Makefile
+     freMakefile = makefile(fremakeYaml["experiment"],buildRoot,mkTemplate)
+     # Loop through compenents and send the component name and requires for the Makefile
+     for c in fremakeYaml['src']:
+          freMakefile.addComponet(c['component'],c['requires'])
+     freMakefile.writeMakefile()
+     freMakefile.finish()
+
+     ## Create the build
+     fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,buildRoot,modules,modulesInit)
+     for c in fremakeYaml['src']:
+          fremakeBuild.writeBuildComponents(c)
+     fremakeBuild.writeScript()
+
+     ## Run the checkout and the build
+     freCheckout.run()
+     fremakeBuild.run()
+
 quit()
-## Create the Makefile
-freMakefile = makefile(fremakeYaml["experiment"])
-# Loop through compenents and send the component name and requires for the Makefile
-for c in fremakeYaml['src']:
-     freMakefile.addComponet(c['component'],c['requires'])
-freMakefile.writeMakefile()
-freMakefile.finish()
+#################################### container stuff below ###########################################################
 ## Run the checkout script
 image="hpc-me-intel:2021.1.1"
 dockerBuild = container(image,fremakeYaml["experiment"])

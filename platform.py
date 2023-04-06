@@ -44,6 +44,16 @@ class platforms ():
                p["modules"]
           except:
                p["modules"]=[""]
+## Check for modulesInit to set up the modules environment
+          try:
+               p["modulesInit"]
+          except:
+               p["modulesInit"]=[""]
+## Get the root for the build
+          try:
+               p["modelRoot"]
+          except:
+               p["modelRoot"] = "/apps"
 ## Check if we are working with a container and get the info for that
           try:
                p["container"]
@@ -78,4 +88,4 @@ class platforms ():
  def getPlatformFromName(self,name):
      for p in self.yaml["platforms"]:
           if p["name"] == name:
-               return (p["compiler"], p["modules"], p["fc"], p["cc"], p["container"], p["mkTemplate"],p["containerBuild"], p["containerRun"])
+               return (p["compiler"], p["modules"], p["modulesInit"], p["fc"], p["cc"], p["modelRoot"],p["container"], p["mkTemplate"],p["containerBuild"], p["containerRun"])

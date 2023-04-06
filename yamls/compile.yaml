@@ -2,7 +2,7 @@ experiment: "am5"
 src:
      - component: "FMS"
        repo: "https://github.com/NOAA-GFDL/FMS.git"
-       cppdefs: "-Duse_libMPI -Duse_netCDF"
+       cppdefs: "-DINTERNAL_FILE_NML -Duse_libMPI -Duse_netCDF"
        branch: "2022.01"
      - component: "am5_phys"
        requires: ["FMS"]
@@ -11,7 +11,7 @@ src:
      - component: "GFDL_atmos_cubed_sphere"
        requires: ["FMS", "am5_phys"]
        repo: "https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git"
-       cppdefs: "-DSPMD -DCLIMATE_NUDGE"
+       cppdefs: "-DSPMD -DCLIMATE_NUDGE -DINTERNAL_FILE_NML"
        branch: "2022.01"
        paths: ["GFDL_atmos_cubed_sphere/driver/GFDL",
               "GFDL_atmos_cubed_sphere/model",
@@ -40,12 +40,14 @@ src:
        branch: "2022.01"
        branch: "land_lad2_2021.02"
        doF90Cpp: True
+       cppdefs: "-DINTERNAL_FILE_NML"
      - component: "mom6"
        requires: ["FMS"]
        paths: ["mom6/MOM6-examples/src/MOM6/config_src/dynamic", "mom6/MOM6-examples/src/MOM6/config_src/coupled_driver", "mom6/MOM6-examples/src/MOM6/src/*/", "mom6/MOM6-examples/src/MOM6/src/*/*/", "mom6/ocean_BGC/generic_tracers", "mom6/ocean_BGC/mocsy/src"]
        branch: ["2021.02","dev/gfdl/2018.04.06"]
        repo: ["https://github.com/NOAA-GFDL/ocean_BGC.git","https://github.com/NOAA-GFDL/MOM6-examples.git"]
      - component: "FMScoupler"
+       paths: ["FMScoupler/full", "FMScoupler/shared"]
        repo: "https://github.com/NOAA-GFDL/FMScoupler.git"
        branch: "2022.01"
        requires: ["FMS", "atmos_drivers", "am5_phys", "land_lad2", "ice_sis", "ice_param", "mom6"]

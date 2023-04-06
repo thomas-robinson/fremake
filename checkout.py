@@ -1,3 +1,4 @@
+import os
 import yaml
 
 srcDir="/apps"
@@ -30,21 +31,24 @@ class checkout():
 ## \brief Opens the checkout script with the specified name
 ## \param self The checkout script object
 ## \param fname The file name of the checkout script
- def __init__(self,fname):
+ def __init__(self,fname,srcDir):
      self.fname = fname
-     self.checkoutScript = open(fname, 'w')
+     self.src = srcDir
+     os.system("mkdir -p "+self.src)
+     os.system("rm -rf "+self.src+"/*")
+     self.checkoutScript = open(self.src+"/"+fname, 'w')
      self.checkoutScript.write("#!/bin/sh -fx \n")
 ## \brief Wirtes the contents of the checkout script by looping through the input yaml
 ## \param self The checkout script object
 ## \param y The fremake compile yaml
  def writeCheckout(self,y):
-   self.checkoutScript.write("cd  /apps/"+y["experiment"]+"/src \n")
+   self.checkoutScript.write("cd  "+self.src +"\n")
    for c in y['src']:
      if type(c['repo']) is list and type(c['branch']) is list:
           for (repo,branch) in zip(c['repo'],c['branch']):
-               writeRepo(self.checkoutScript,repo,c['component'],srcDir,branch,c['additionalInstructions'],True)
+               writeRepo(self.checkoutScript,repo,c['component'],self.src,branch,c['additionalInstructions'],True)
      else:
-          writeRepo(self.checkoutScript,c['repo'],c['component'],srcDir,c['branch'],c['additionalInstructions'],False)
+          writeRepo(self.checkoutScript,c['repo'],c['component'],self.src,c['branch'],c['additionalInstructions'],False)
 #          self.checkoutScript.write("echo cloning "+c['repo']+" -b "+c['branch']+" into "+srcDir+"/"+c['component']+"\n")
 #          if c['branch']=="":
 #               self.checkoutScript.write("git clone --recursive "+c['repo']+" "+c['component']+"\n")
@@ -61,7 +65,7 @@ class checkout():
  def checkoutRun (self):
      os.chmod(srcDir+"/"+self.fname, 0o744)
      try:
-          subprocess.run(args=["./"+srcDir+"/"+self.fname], check=True)
+          subprocess.run(args=["./"+self.src+"/"+self.fname], check=True)
      except:
           print("There was an error with the checkout script "+checkoutScriptName)
           raise

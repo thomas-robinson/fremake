@@ -1,14 +1,18 @@
+import os
 
 class makefile():
 ## \brief Opens Makefile and sets the experiment and other common variables
- def __init__(self,exp):
+## \param self The Makefile object
+## \param mkTemplate The location of the template .mk file for compiling
+ def __init__(self,exp,buildRoot,mkTemplate):
      self.e = exp
-     self.src = "/apps/"+self.e+"/src/"
-     self.bld = "/apps/"+self.e+"/exec/"
-     self.template = "/apps/mkmf/templates/hpcme-intel21.mk"
+     self.src = buildRoot+"/"+exp+"/src"
+     self.bld = buildRoot+"/"+exp+"/exec" 
+     self.template = mkTemplate
      self.c =[] #components
      self.r=[] #requires
-     self.m=open("Makefile","w")
+     os.system("mkdir -p "+self.bld)
+     self.m=open(self.bld+"/Makefile","w")
 ## \brief Adds a component and corresponding requires to the list
 ## \param self The Makefile object
 ## \param c The component
@@ -25,8 +29,8 @@ class makefile():
           libstring = libstring+lib+"/lib"+lib+".a "
 # Write the header information for the Makefile
      self.m.write("# Makefile for "+self.e+"\n")
-     self.m.write("SRCROOT = "+self.src+"\n")
-     self.m.write("BUILDROOT = "+self.bld+"\n")
+     self.m.write("SRCROOT = "+self.src+"/\n")
+     self.m.write("BUILDROOT = "+self.bld+"/\n")
      self.m.write("MK_TEMPLATE = "+self.template+"\n") 
      self.m.write("include $(MK_TEMPLATE)"+"\n")
 # Write the main experiment compile 

@@ -1,3 +1,4 @@
+import subprocess
 import yaml
 from yamlfre import *
 from checkout import *
@@ -8,7 +9,7 @@ class checkoutContainer():
 ## Open and check the yaml for the compile
 ## \param self The compile object
 ## \param compileYaml The name of the compile yaml file
- def __init__(self,compileYaml):
+ def __init__(self,compileYaml,modelRoot):
      ## Open the yaml file and parse as self.yaml
      self.yaml = parseCompile(compileYaml)
      ## Check the yaml for required things
@@ -18,6 +19,8 @@ class checkoutContainer():
      except:
           print("You must set an experiment name to compile \n")
           raise
+     ## Set up the srcDir
+     self.src = modelRoot + "/" + self.yaml["experiment"] + "/src"
      ## Check for required src
      try:
           self.yaml["src"]
@@ -71,10 +74,20 @@ class checkoutContainer():
 ## Writes and closes the checkout script
 ## \param self The compile object
  def writeCheckout(self):
-     checkoutScript = checkout(self.checkoutScriptName)
+     checkoutScript = checkout(self.checkoutScriptName,self.src)
      checkoutScript.writeCheckout(self.yaml)
      checkoutScript.finish()
 ## Runs the checkout script
 ## \param self The compile object
  def run(self):
-     checkoutScript.checkoutRun()
+     checkoutScriptName = self.src+"/checkout.sh"
+     os.chmod(checkoutScriptName, 0o744)
+     try:
+          subprocess.run(args=[checkoutScriptName], check=True)
+     except:
+          print("There was an error with the checkout script "+checkoutScriptName)
+          raise
+## Returns the filled in yaml from the checkout
+## \param self The compile object
+ def getYaml(self):
+     return self.yaml
