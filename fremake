@@ -52,8 +52,9 @@ if __name__ == "__main__":
                         help="Execute all the created scripts in the current session")
     parser.add_argument("-n NUM", 
 			"--ncores=NUM",
-			type=int, metavar='',
-                        help="Number of processor cores to use for concurrent make jobs. The number of make jobs is the number of cores/tasks requested. The default value depends on current site you are working at")
+			type=int, 
+			metavar='', default=1,
+                        help="Number of processor cores to use for concurrent make jobs. The number of make jobs is the number of cores/tasks requested (default 1)")
     parser.add_argument("-s", 
 			"--submit",
 			action="store_true",
