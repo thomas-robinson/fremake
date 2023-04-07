@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fremake is used to create a code checkout script to compile models for FRE experiments.')
     parser.add_argument("-y", 
 			"--yamlfile", dest='file',
-                        help="Experiment yaml configuration FILE",required=True)
+                        help="Experiment yaml compile FILE",required=True)
     parser.add_argument("-p", 
 			"--platform", dest='string',
 			nargs='*',
@@ -42,10 +42,9 @@ if __name__ == "__main__":
 			"--keep-compiled", 
 			action="store_true", 
 			help="Keep compiled files in the executable directory for future use")
-    parser.add_argument("-L", 
-			"--link",
+    parser.add_argument("--no-link",
 			action="store_true",
-                        help="Link the executable")
+                        help="Do not link the executable")
     parser.add_argument("-E", 
 			"--execute",
 			action="store_true",
@@ -90,7 +89,7 @@ if __name__ == "__main__":
       logging.basicConfig(level=logging.ERROR)
 
 
-compileYaml = "yamls/compile.yaml"
+compileYaml = args.y
 platformsYaml = "yamls/platforms.yaml"
 srcDir="src"
 checkoutScriptName = "checkout.sh"
