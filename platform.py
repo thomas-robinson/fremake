@@ -85,6 +85,13 @@ class platforms ():
                     p["mkTemplate"]
                except:
                     raise ValueError("The non-container platform "+p["name"]+" must specify a mkTemplate \n")
+## \brief Checks if the platform yaml has the named platform
+ def hasPlatform(self,name):
+     for p in self.yaml["platforms"]:
+          if p["name"] == name:
+               return True
+     return False
+## \brief Get the platform information from the name of the platform
  def getPlatformFromName(self,name):
      for p in self.yaml["platforms"]:
           if p["name"] == name:

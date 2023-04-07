@@ -21,15 +21,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fremake is used to create a code checkout script to compile models for FRE experiments.')
     parser.add_argument("-y",
                         "--yamlfile",
-                        help="Experiment yaml compile FILE",required=True)
+                        type=str, help="Experiment yaml compile FILE",required=True)
     parser.add_argument("-p",
                         "--platform",
                         nargs='*',
-                        help="Hardware and software FRE platform STRING. This sets platform-specific data and instructions",required=True)
+                        type=str, help="Hardware and software FRE platform space separated list of STRING(s). This sets platform-specific data and instructions",required=True)
     parser.add_argument("-t",
                         "--target",
                         nargs='*',
-                        help="FRE target STRING that defines compilation settings and linkage directives for experiments.\n\nPredefined targets refer to groups of directives that exist in the mkmf template file 				(referenced in buildDocker.py). Possible predefined targets include 'prod', 'openmp', 'repro', 'debug, 'hdf5'; however 'prod', 'repro', and 'debug' are mutually exclusive (cannot not 				   use more than one of these in the target list). Any number of targets can be used.",required=True)
+                        type=str, help="FRE target space separated list of STRING(s) that defines compilation settings and linkage directives for experiments.\n\nPredefined targets refer to groups of directives that exist in the mkmf template file 				(referenced in buildDocker.py). Possible predefined targets include 'prod', 'openmp', 'repro', 'debug, 'hdf5'; however 'prod', 'repro', and 'debug' are mutually exclusive (cannot not 				   use more than one of these in the target list). Any number of targets can be used.",required=True)
     parser.add_argument("-f", 
                         "--force-checkout",
                         action="store_true",
@@ -78,21 +78,24 @@ if __name__ == "__main__":
     ps = args.platform
     ts = args.target
   
-    ## Store the platforms and targets in a list
-    #pl = ps.split(',')
-    #tl = ts.split(',')  
-  
     ## Define operation of option(s) above
     if args.verbose:
       logging.basicCOnfig(level=logging.INFO)
     else:
       logging.basicConfig(level=logging.ERROR)
 
-
+#### Main
 compileYaml = yml
 platformsYaml = "yamls/platforms.yaml"
 srcDir="src"
 checkoutScriptName = "checkout.sh"
+## Store the platforms and targets in a list
+plist = args.platform
+tlist = args.target
+#plist = ps.split(",")
+#tlist = ts.split(",")
+print(plist)
+print(tlist)
 #os.mkdir(srcDir)
 ## Open the yaml file and parse as fremakeYaml
 fremakeCheckCompileYaml = parseCompile(compileYaml)
@@ -101,32 +104,38 @@ platYaml = parseCompile(platformsYaml)
 
 ## Parse the platforms
 platforms = platforms(platformsYaml)
-(compiler,modules,modulesInit,fc,cc,buildRoot,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName("ncrc4.intel")
-## Check for type of build
-if container == "":
-     ## Create the checkout script
-     freCheckout = checkoutContainer(compileYaml,buildRoot)
-     freCheckout.writeCheckout()
-     #Get the yaml filled out
-     fremakeYaml = freCheckout.getYaml()
+## loop through the platforms specified on the command line
+for platformName in plist:
+     if platforms.hasPlatform(platformName):
+          print ("Compiling for platform " + platformName)
+     else:
+          raise SystemExit (platformName + " does not exist in " + platformsYaml)
+     (compiler,modules,modulesInit,fc,cc,buildRoot,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName(platformName)
+     ## Check for type of build
+     if container == "":
+          ## Create the checkout script
+          freCheckout = checkoutContainer(compileYaml,buildRoot)
+          freCheckout.writeCheckout()
+          #Get the yaml filled out
+          fremakeYaml = freCheckout.getYaml()
 
-     ## Create the Makefile
-     freMakefile = makefile(fremakeYaml["experiment"],buildRoot,mkTemplate)
-     # Loop through compenents and send the component name and requires for the Makefile
-     for c in fremakeYaml['src']:
-          freMakefile.addComponet(c['component'],c['requires'])
-     freMakefile.writeMakefile()
-     freMakefile.finish()
+          ## Create the Makefile
+          freMakefile = makefile(fremakeYaml["experiment"],buildRoot,mkTemplate)
+          # Loop through compenents and send the component name and requires for the Makefile
+          for c in fremakeYaml['src']:
+               freMakefile.addComponet(c['component'],c['requires'])
+          freMakefile.writeMakefile()
+          freMakefile.finish()
 
-     ## Create the build
-     fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,buildRoot,modules,modulesInit)
-     for c in fremakeYaml['src']:
-          fremakeBuild.writeBuildComponents(c)
-     fremakeBuild.writeScript()
+          ## Create the build
+          fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,buildRoot,modules,modulesInit)
+          for c in fremakeYaml['src']:
+               fremakeBuild.writeBuildComponents(c)
+          fremakeBuild.writeScript()
 
-     ## Run the checkout and the build
-     freCheckout.run()
-     fremakeBuild.run()
+          ## Run the checkout and the build
+          freCheckout.run()
+          fremakeBuild.run()
 
 quit()
 #################################### container stuff below ###########################################################
