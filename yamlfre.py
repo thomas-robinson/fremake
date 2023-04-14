@@ -113,6 +113,7 @@ class freyaml():
      with open(self.modelfile, 'r') as file:
           self.modelyaml = yaml.safe_load(file)
      file.close()
+     self.freyaml.update(self.modelyaml)
      self.compilefile = self.modelyaml["compileYaml"]
      self.compile = compileYaml(self.compilefile)
      self.compileyaml = self.compile.getCompileYaml()
@@ -123,5 +124,9 @@ class freyaml():
      self.freyaml.update(self.platformsyaml)
      print(self.freyaml["experiment"])
      print(self.freyaml["platforms"])
-#     self.platformyaml = 
-
+## \return platform yaml dictionary
+ def getPlatformsYaml(self):
+     return self.platformsyaml
+## \return compile yaml dictionary
+ def getCompileYaml(self):
+     return self.compileyaml
