@@ -2,8 +2,6 @@ import os
 import yaml
 import subprocess
 
-srcDir="/apps"
-
 def writeRepo(file,repo,component,srcDir,branch,add,multi):
 ## Write message about cloning repo and branch in component
      file.write("echo cloning "+repo+" -b "+branch+" into "+srcDir+"/"+component+"\n")
@@ -32,6 +30,7 @@ class checkout():
 ## \brief Opens the checkout script with the specified name
 ## \param self The checkout script object
 ## \param fname The file name of the checkout script
+## \param srcDir The source directory where fname will be run and source will exist
  def __init__(self,fname,srcDir):
      self.fname = fname
      self.src = srcDir

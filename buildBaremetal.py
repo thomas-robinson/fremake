@@ -13,12 +13,13 @@ class buildBaremetal():
 ## \param self The buildScript object
 ## \param exp The experiment name
 ## \param mkTemplate The template used by mkmf to compile the model
-## \param modelRoot The root location for the model drectories
+## \param srcDir The source directory
+## \param bldDir The build directory
 ## \param modules The list of modules to load before compilation
- def __init__(self,exp,mkTemplate,modelRoot,modules,modulesInit):
+ def __init__(self,exp,mkTemplate,srcDir,bldDir,modules,modulesInit):
      self.e = exp
-     self.src = modelRoot+"/"+exp+"/src"
-     self.bld = modelRoot+"/"+exp+"/exec"
+     self.src = srcDir
+     self.bld = bldDir
      self.mkmf = True
      self.template = mkTemplate
      self.modules = ""

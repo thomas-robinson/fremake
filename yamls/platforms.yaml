@@ -5,12 +5,12 @@ platforms:
      modules: ["intel/intel.2022.0.2","fre/bronx-20","cray-hdf5/1.12.0.4","cray-netcdf/4.6.3.2"]
      fc: ftn
      cc: cc
-     mkTemplate: "/ncrc/home2/fms/local/opt/fre-commands/bronx-20/site/ncrc5/intel.mk"
+     mkTemplate: "/ncrc/home2/fms/local/opt/fre-commands/bronx-20/site/ncrc4/intel.mk"
      modelRoot: /ncrc/home2/Thomas.Robinson/fremake_canopy/test
    - name: ncrc5.intel
      compiler: intel
      modulesInit: [" module use -a /ncrc/home2/fms/local/modulefiles \n","source $MODULESHOME/init/sh \n"]
-     modules: ["intel/2022.2.1","fre/bronx-20","module load cray-hdf5/1.12.0.4"]
+     modules: ["intel-classic/2022.2.1","fre/bronx-20",cray-hdf5/1.12.2.3, cray-netcdf/4.9.0.3]
      fc: ftn
      cc: cc
      mkTemplate: "/ncrc/home2/fms/local/opt/fre-commands/bronx-20/site/ncrc5/intel-classic.mk"

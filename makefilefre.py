@@ -4,10 +4,10 @@ class makefile():
 ## \brief Opens Makefile and sets the experiment and other common variables
 ## \param self The Makefile object
 ## \param mkTemplate The location of the template .mk file for compiling
- def __init__(self,exp,buildRoot,mkTemplate):
+ def __init__(self,exp,srcDir,bldDir,mkTemplate):
      self.e = exp
-     self.src = buildRoot+"/"+exp+"/src"
-     self.bld = buildRoot+"/"+exp+"/exec" 
+     self.src = srcDir 
+     self.bld =  bldDir
      self.template = mkTemplate
      self.c =[] #components
      self.r=[] #requires

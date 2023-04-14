@@ -109,16 +109,18 @@ for platformName in plist:
           raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
      (compiler,modules,modulesInit,fc,cc,modelRoot,iscontainer,mkTemplate,containerBuild,ContainerRun)=freYaml.platforms.getPlatformFromName(platformName)
 ## Create the source directory for the platform
-     os.system("mkdir -p " + modelRoot + "/src")
-     os.system("mkdir -p " + modelRoot + "/exec")
+     srcDir = modelRoot + "/" + fremakeYaml["experiment"] + "/src"
+     bldDir = modelRoot + "/" + platformName + "/" + fremakeYaml["experiment"] + "/exec"
+     os.system("mkdir -p " + srcDir)
+     os.system("mkdir -p " + bldDir)
      ## Check for type of build
      if iscontainer == "":
           ## Create the checkout script
-          freCheckout = checkout("checkout.sh",modelRoot+"/src")
+          freCheckout = checkout("checkout.sh",srcDir)
           freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
           freCheckout.finish()
           ## Create the Makefile
-          freMakefile = makefile(fremakeYaml["experiment"],modelRoot,mkTemplate)
+          freMakefile = makefile(fremakeYaml["experiment"],srcDir,bldDir,mkTemplate)
           # Loop through compenents and send the component name and requires for the Makefile
           for c in fremakeYaml['src']:
                freMakefile.addComponet(c['component'],c['requires'])
@@ -126,7 +128,7 @@ for platformName in plist:
           freMakefile.finish()
 
           ## Create the build
-          fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,modelRoot,modules,modulesInit)
+          fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,srcDir,bldDir,modules,modulesInit)
           for c in fremakeYaml['src']:
                fremakeBuild.writeBuildComponents(c)
           fremakeBuild.writeScript()
