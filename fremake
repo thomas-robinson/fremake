@@ -92,35 +92,33 @@ checkoutScriptName = "checkout.sh"
 ## Store the platforms and targets in a list
 plist = args.platform
 tlist = args.target
-#plist = ps.split(",")
-#tlist = ts.split(",")
-print(plist)
-print(tlist)
-#os.mkdir(srcDir)
 ## Open the yaml file and parse as fremakeYaml
-fremakeCheckCompileYaml = parseCompile(compileYaml)
-platYaml = parseCompile(platformsYaml)
+freYaml = freyaml(yml)
+#fremakeCheckCompileYaml = parseCompile(compileYaml)
+#platYaml = parseCompile(platformsYaml)
 #fremakeYaml.update(pyaml)
+fremakeYaml = freYaml.getCompileYaml()
 
 ## Parse the platforms
-platforms = platforms(platformsYaml)
+#platforms = platforms(platformsYaml)
 ## loop through the platforms specified on the command line
 for platformName in plist:
-     if platforms.hasPlatform(platformName):
+     if freYaml.platforms.hasPlatform(platformName):
           print ("Compiling for platform " + platformName)
      else:
-          raise SystemExit (platformName + " does not exist in " + platformsYaml)
-     (compiler,modules,modulesInit,fc,cc,buildRoot,container,mkTemplate,containerBuild,ContainerRun)=platforms.getPlatformFromName(platformName)
+          raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
+     (compiler,modules,modulesInit,fc,cc,modelRoot,iscontainer,mkTemplate,containerBuild,ContainerRun)=freYaml.platforms.getPlatformFromName(platformName)
+## Create the source directory for the platform
+     os.system("mkdir -p " + modelRoot + "/src")
+     os.system("mkdir -p " + modelRoot + "/exec")
      ## Check for type of build
-     if container == "":
+     if iscontainer == "":
           ## Create the checkout script
-          freCheckout = checkoutContainer(compileYaml,buildRoot)
-          freCheckout.writeCheckout()
-          #Get the yaml filled out
-          fremakeYaml = freCheckout.getYaml()
-
+          freCheckout = checkout("checkout.sh",modelRoot+"/src")
+          freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
+          freCheckout.finish()
           ## Create the Makefile
-          freMakefile = makefile(fremakeYaml["experiment"],buildRoot,mkTemplate)
+          freMakefile = makefile(fremakeYaml["experiment"],modelRoot,mkTemplate)
           # Loop through compenents and send the component name and requires for the Makefile
           for c in fremakeYaml['src']:
                freMakefile.addComponet(c['component'],c['requires'])
@@ -128,7 +126,7 @@ for platformName in plist:
           freMakefile.finish()
 
           ## Create the build
-          fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,buildRoot,modules,modulesInit)
+          fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,modelRoot,modules,modulesInit)
           for c in fremakeYaml['src']:
                fremakeBuild.writeBuildComponents(c)
           fremakeBuild.writeScript()
@@ -136,21 +134,18 @@ for platformName in plist:
           ## Run the checkout and the build
           freCheckout.run()
           fremakeBuild.run()
-
-quit()
+     else:
 #################################### container stuff below ###########################################################
-## Run the checkout script
-image="hpc-me-intel:2021.1.1"
-dockerBuild = container(image,fremakeYaml["experiment"])
-dockerBuild.writeDockerfileCheckout()
-for c in fremakeYaml['src']:
-     dockerBuild.writeDockerfileMkmf(c)
-dockerBuild.build()
-#buildDockerfile(fremakeYaml,image)
-quit()
-os.system("podman build -f Dockerfile -t "+fremakeYaml["experiment"]+":latest")
-#try:
-#     subprocess.run(args=["./"+checkoutScriptName], check=True)
-#except:
-#     print("There was an error with the checkout script "+checkoutScriptName)
-#     raise
+          ## Run the checkout script
+          image="hpc-me-intel:2021.1.1"
+          freCheckout = checkoutContainer(compileYaml,".")
+          freCheckout.writeCheckout()
+          #Get the yaml filled out
+          fremakeYaml = freCheckout.getYaml()
+          dockerBuild = container(image,fremakeYaml["experiment"])
+          dockerBuild.writeDockerfileCheckout()
+          for c in fremakeYaml['src']:
+               dockerBuild.writeDockerfileMkmf(c)
+          dockerBuild.build()
+          #buildDockerfile(fremakeYaml,image)
+          os.system("podman build -f Dockerfile -t "+fremakeYaml["experiment"]+":latest")

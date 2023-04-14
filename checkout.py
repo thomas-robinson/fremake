@@ -1,5 +1,6 @@
 import os
 import yaml
+import subprocess
 
 srcDir="/apps"
 
@@ -62,10 +63,10 @@ class checkout():
      self.checkoutScript.close()
 ## \brief Changes the permission on the checkout script and runs it
 ## \param self The checkout script object
- def checkoutRun (self):
-     os.chmod(srcDir+"/"+self.fname, 0o744)
+ def run (self):
+     os.chmod(self.src+"/"+self.fname, 0o744)
      try:
-          subprocess.run(args=["./"+self.src+"/"+self.fname], check=True)
+          subprocess.run(args=[self.src+"/"+self.fname], check=True)
      except:
           print("There was an error with the checkout script "+checkoutScriptName)
           raise

@@ -7,7 +7,9 @@ from yamlfre import *
 
 class platforms ():
  def __init__(self,fname):
-     self.yaml=parseCompile(fname)
+     with open(fname, 'r') as file:
+          self.yaml = yaml.safe_load(file)
+     file.close()
 ## Check the yaml for errors/omissions
      try:
           self.yaml["platforms"]
@@ -91,6 +93,9 @@ class platforms ():
           if p["name"] == name:
                return True
      return False
+## \brief Get the platform yaml
+ def getPlatformsYaml(self):
+     return self.yaml
 ## \brief Get the platform information from the name of the platform
  def getPlatformFromName(self,name):
      for p in self.yaml["platforms"]:
