@@ -20,13 +20,22 @@ class makefile():
  def addComponet (self,c,r):
      self.c.append(c)
      self.r.append(r)
+##\brief Sorts the component by how many requires there are for that component
+##\param self The Makefile object
+##\param c The component
+##\param r The requires for that component
+ def createLibstring (self,c,r):
+     d=zip(self.c,self.r)
+     return(sorted(d,key=lambda values:len(values[1]),reverse=True))
 ## \brief Writes the Makefile.  Should be called after all components are added
 ## \param self The Makefile object
  def writeMakefile (self):
 # Get the list of all of the libraries
+     sd=self.createLibstring(self.c,self.r)
      libstring=" "
-     for lib in self.c:
-          libstring = libstring+lib+"/lib"+lib+".a "
+     for i in sd:      
+       lib=i[0]        
+       libstring = libstring+lib+"/lib"+lib+".a "   
 # Write the header information for the Makefile
      self.m.write("# Makefile for "+self.e+"\n")
      self.m.write("SRCROOT = "+self.src+"/\n")
@@ -37,7 +46,7 @@ class makefile():
      self.m.write(self.e+": "+libstring+"\n")
      self.m.write("\t$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)"+"\n")
 # Write the individual component library compiles
-     for (c,r) in zip(self.c,self.r):
+     for (c,r) in sd:
           libstring = " "
           for lib in r:
                libstring = libstring+lib+"/lib"+lib+".a "
