@@ -11,7 +11,7 @@ import argparse
 import logging
 from yamlfre import *
 from platform import *
-from checkoutContainer import *
+from checkout import *
 from makefilefre import *
 from buildDocker import *
 from buildBaremetal import *
