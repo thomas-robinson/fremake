@@ -94,14 +94,12 @@ plist = args.platform
 tlist = args.target
 ## Open the yaml file and parse as fremakeYaml
 freYaml = freyaml(yml)
-#fremakeCheckCompileYaml = parseCompile(compileYaml)
-#platYaml = parseCompile(platformsYaml)
-#fremakeYaml.update(pyaml)
 fremakeYaml = freYaml.getCompileYaml()
 
-## Parse the platforms
-#platforms = platforms(platformsYaml)
-## loop through the platforms specified on the command line
+## Loop through the platforms specified on the command line
+## If the platform is a baremetal platform, write the checkout script and run it once
+## This should be done separately and serially because bare metal platforms should all be using
+## the same source code.
 for platformName in plist:
      if freYaml.platforms.hasPlatform(platformName):
           print ("Compiling for platform " + platformName)
@@ -109,16 +107,28 @@ for platformName in plist:
           raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
      (compiler,modules,modulesInit,fc,cc,modelRoot,iscontainer,mkTemplate,containerBuild,ContainerRun)=freYaml.platforms.getPlatformFromName(platformName)
 ## Create the source directory for the platform
+     if iscontainer == "":
+          srcDir = modelRoot + "/" + fremakeYaml["experiment"] + "/src"
+          if not os.path.exists(srcDir):
+               os.system("mkdir -p " + srcDir)
+          if not os.path.exists(srcDir+"/checkout.sh"):
+               freCheckout = checkout("checkout.sh",srcDir)
+               freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
+               freCheckout.finish()
+               freCheckout.run()
+## Loop through platforms and targets
+for platformName in plist:
+     if freYaml.platforms.hasPlatform(platformName):
+          print ("Compiling for platform " + platformName)
+     else:
+          raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
+     (compiler,modules,modulesInit,fc,cc,modelRoot,iscontainer,mkTemplate,containerBuild,ContainerRun)=freYaml.platforms.getPlatformFromName(platformName)
+## Make the bldDir based on the modelRoot, the platform, and the target
      srcDir = modelRoot + "/" + fremakeYaml["experiment"] + "/src"
      bldDir = modelRoot + "/" + platformName + "/" + fremakeYaml["experiment"] + "/exec"
-     os.system("mkdir -p " + srcDir)
      os.system("mkdir -p " + bldDir)
      ## Check for type of build
      if iscontainer == "":
-          ## Create the checkout script
-          freCheckout = checkout("checkout.sh",srcDir)
-          freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
-          freCheckout.finish()
           ## Create the Makefile
           freMakefile = makefile(fremakeYaml["experiment"],srcDir,bldDir,mkTemplate)
           # Loop through compenents and send the component name and requires for the Makefile
@@ -126,15 +136,12 @@ for platformName in plist:
                freMakefile.addComponet(c['component'],c['requires'])
           freMakefile.writeMakefile()
           freMakefile.finish()
-
-          ## Create the build
+          ## Create the compile script
           fremakeBuild = buildBaremetal(fremakeYaml["experiment"],mkTemplate,srcDir,bldDir,modules,modulesInit)
           for c in fremakeYaml['src']:
                fremakeBuild.writeBuildComponents(c)
           fremakeBuild.writeScript()
-
-          ## Run the checkout and the build
-          freCheckout.run()
+          ## Run the build
           fremakeBuild.run()
      else:
 #################################### container stuff below ###########################################################
