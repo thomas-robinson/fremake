@@ -17,6 +17,7 @@ platforms:
      modelRoot: /ncrc/home2/Thomas.Robinson/fremake_canopy/test
    - name: hpcme.2021
      compiler: intel
+     modelRoot: /apps
      fc: mpiifort
      cc: mpiicc
      container: True
