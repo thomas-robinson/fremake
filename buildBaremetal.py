@@ -16,6 +16,7 @@ class buildBaremetal():
 ## \param srcDir The source directory
 ## \param bldDir The build directory
 ## \param modules The list of modules to load before compilation
+## \param modulesInit A list of commands with new line characters to initialize modules
  def __init__(self,exp,mkTemplate,srcDir,bldDir,modules,modulesInit):
      self.e = exp
      self.src = srcDir
@@ -31,8 +32,8 @@ class buildBaremetal():
                     "src_dir="+self.src+"/ \n",
                     "mkmf_template="+self.template+" \n"]
      if self.modules != "":
-          self.setup.extend(modulesInit)
-          self.setup.append("module load "+self.modules+" \n")
+          self.setup.extend(modulesInit) #extend because this is a list
+          self.setup.append("module load "+self.modules+" \n") # Append because this is a single string
 ## Create the build directory
      os.system("mkdir -p "+self.bld)
 ## Create the compile script
@@ -70,12 +71,15 @@ class buildBaremetal():
                self.f.write(" mkmf -m Makefile -a $src_dir -b $bld_dir -p lib"+comp+".a -t $mkmf_template -c \""+c["cppdefs"]+"\" -o \""+reqstring+"\" -IFMS/fms2_io/include -IFMS/include -IFMS/mpp/include -Imom6/MOM6-examples/src/MOM6/pkg/CVMix-src/include $bld_dir/"+comp+"/pathnames_"+comp+" \n")
 ## Finishes and writes the build script
 ## \param self The buildScript object
+##TODO: add targets input
  def writeScript(self):
      self.f.write("cd "+self.bld+"\n")
+     #TODO add targets (DEBUG,REPRO,PROD and OPENMP)
      self.f.write("make -j 4 DEBUG=on \n")
      self.f.close()
 ## Run the build script
 ## \param self The dockerfile object
+## TODO run as a batch job on the login cluster
  def run(self):
 ###### TODO make the Makefile
      os.chmod(self.bld+"/compile.sh", 0o744)

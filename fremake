@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 ## \date 2023
 ## \author Tom Robinson
-## \email thomas.robinson@noaa.gov
+## \author Dana Singh
 ## \description fremake is used to create and run a code checkout script and compile a model.
 
 import subprocess
@@ -115,20 +115,21 @@ for platformName in plist:
                freCheckout = checkout("checkout.sh",srcDir)
                freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
                freCheckout.finish()
+## TODO: Options for running on login cluster?
                freCheckout.run()
 ## Loop through platforms and targets
 for platformName in plist:
-     if freYaml.platforms.hasPlatform(platformName):
+    if freYaml.platforms.hasPlatform(platformName):
           print ("Compiling for platform " + platformName)
      else:
           raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
      (compiler,modules,modulesInit,fc,cc,modelRoot,iscontainer,mkTemplate,containerBuild,ContainerRun)=freYaml.platforms.getPlatformFromName(platformName)
 ## Make the bldDir based on the modelRoot, the platform, and the target
      srcDir = modelRoot + "/" + fremakeYaml["experiment"] + "/src"
-     bldDir = modelRoot + "/" + platformName + "/" + fremakeYaml["experiment"] + "/exec"
-     os.system("mkdir -p " + bldDir)
      ## Check for type of build
      if iscontainer == "":
+          bldDir = modelRoot + "/" + platformName + "/" + fremakeYaml["experiment"] + "/exec"
+          os.system("mkdir -p " + bldDir)
           ## Create the Makefile
           freMakefile = makefile(fremakeYaml["experiment"],srcDir,bldDir,mkTemplate)
           # Loop through compenents and send the component name and requires for the Makefile
@@ -147,14 +148,17 @@ for platformName in plist:
 #################################### container stuff below ###########################################################
           ## Run the checkout script
           image="hpc-me-intel:2021.1.1"
-          freCheckout = checkoutContainer(compileYaml,".")
-          freCheckout.writeCheckout()
+          tmpDir = "tmp/"+platformName
+          freCheckout = checkoutForContainer("checkout.sh", srcDir, tmpDir)
+          freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
+          freCheckout.finish()
           #Get the yaml filled out
-          fremakeYaml = freCheckout.getYaml()
+##### NEED MAKEFILE
           dockerBuild = container(image,fremakeYaml["experiment"])
-          dockerBuild.writeDockerfileCheckout()
+          dockerBuild.writeDockerfileCheckout("checkout.sh", tmpDir+"/checkout.sh")
           for c in fremakeYaml['src']:
                dockerBuild.writeDockerfileMkmf(c)
           dockerBuild.build()
+          freCheckout.cleanup()
           #buildDockerfile(fremakeYaml,image)
-          os.system("podman build -f Dockerfile -t "+fremakeYaml["experiment"]+":latest")
+#          os.system("podman build -f Dockerfile -t "+fremakeYaml["experiment"]+":latest")

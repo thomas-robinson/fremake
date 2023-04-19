@@ -33,17 +33,20 @@ class container():
      self.bldCreate=["RUN mkdir -p "+self.bld+" \n",
                      "COPY Makefile "+self.bld+"/Makefile \n"]
      self.d=open("Dockerfile","w")
+     self.d.writelines("FROM "+self.base+" \n")
 ## \brief writes to the checkout part of the Dockerfile and sets up the compile
 ## \param self The dockerfile object
- def writeDockerfileCheckout(self):
-     self.d.writelines("FROM "+self.base+" \n")
-     self.d.write("COPY checkout.sh /apps/"+self.e+"/src/checkout.sh \n")
+## \param cScriptName The name of the checkout script in the container
+## \param cOnDisk The relative path to the checkout script on disk
+ def writeDockerfileCheckout(self, cScriptName, cOnDisk):
+     self.checkoutPath = "/apps/"+self.e+"/src/"+ cScriptName
+     self.d.write("COPY " + cOnDisk +" "+ self.checkoutPath  +" \n")
      self.d.write("RUN chmod 744 /apps/"+self.e+"/src/checkout.sh \n")
      self.d.writelines(self.setup)
      self.d.write(" && /apps/"+self.e+"/src/checkout.sh \n")
 # Clone mkmf
      self.d.writelines(self.mkmfclone)
-# Set up the bldDir     
+# Set up the bldDir
      self.d.writelines(self.bldCreate)
 ## \brief Adds components to the build part of the Dockerfile
 ## \param self The dockerfile object

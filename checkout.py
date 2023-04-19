@@ -2,6 +2,15 @@ import os
 import yaml
 import subprocess
 
+## TODO: Add parallelizations using () and simplify
+## Creates the clone lines for the checkout script
+## \param file Checkout script file 
+## \param repo the repo(s) to clone
+## \param component Model component name
+## \param srcDir The source directory
+## \param branch The version to clone/checkout
+## \param add Additional instrcutions after the clone
+## \param multi True if a component has more than one repo to clone
 def writeRepo(file,repo,component,srcDir,branch,add,multi):
 ## Write message about cloning repo and branch in component
      file.write("echo cloning "+repo+" -b "+branch+" into "+srcDir+"/"+component+"\n")
@@ -35,6 +44,7 @@ class checkout():
      self.fname = fname
      self.src = srcDir
      os.system("mkdir -p "+self.src)
+##TODO: Force checkout 
      os.system("rm -rf "+self.src+"/*")
      self.checkoutScript = open(self.src+"/"+fname, 'w')
      self.checkoutScript.write("#!/bin/sh -fx \n")
@@ -49,19 +59,15 @@ class checkout():
                writeRepo(self.checkoutScript,repo,c['component'],self.src,branch,c['additionalInstructions'],True)
      else:
           writeRepo(self.checkoutScript,c['repo'],c['component'],self.src,c['branch'],c['additionalInstructions'],False)
-#          self.checkoutScript.write("echo cloning "+c['repo']+" -b "+c['branch']+" into "+srcDir+"/"+c['component']+"\n")
-#          if c['branch']=="":
-#               self.checkoutScript.write("git clone --recursive "+c['repo']+" "+c['component']+"\n")
-#          else:
-#               self.checkoutScript.write("git clone --recursive "+c['repo']+" -b "+c['branch']+" "+c['component']+"\n")
-#     if c['additionalInstructions']!="":
-          self.checkoutScript.write(c['additionalInstructions'])
+## Add additional instructions
+     self.checkoutScript.write(c['additionalInstructions'])
 ## \brief Closes the checkout script when writing is done
 ## \param self The checkout script object
  def finish (self):
      self.checkoutScript.close()
 ## \brief Changes the permission on the checkout script and runs it
 ## \param self The checkout script object
+## TODO: batch script building
  def run (self):
      os.chmod(self.src+"/"+self.fname, 0o744)
      try:
@@ -69,4 +75,25 @@ class checkout():
      except:
           print("There was an error with the checkout script "+checkoutScriptName)
           raise
-
+###################################################################################################
+## Subclass for container checkout
+class checkoutForContainer (checkout):
+## \brief Opens the checkout script with the specified name
+## \param self The checkout script object
+## \param fname The file name of the checkout script
+## \param srcDir The source directory where fname will be run and source will exist
+## \param tmpdir The relative path on disk that fname will be created (and copied from into the
+## container)
+ def __init__(self,fname,srcDir,tmpdir):
+     self.fname = fname
+     self.src = srcDir
+     self.tmpdir = tmpdir
+     os.system("mkdir -p "+self.tmpdir)
+     os.system("rm -rf "+self.tmpdir+"/*")
+     self.checkoutScript = open(self.tmpdir+"/"+fname, 'w')
+     self.checkoutScript.write("#!/bin/sh -fx \n")
+     print ("Finished checkoutForContainer init")
+## \brief Removes the self.tmpdir and contents
+## \param self The checkout script object
+ def cleanup (self):
+     os.system("rm -rf "+self.tmpdir)
