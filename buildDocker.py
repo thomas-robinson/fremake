@@ -30,8 +30,6 @@ class container():
      self.bldsetup=["RUN bld_dir="+self.bld+" \\ \n", 
                     " && src_dir="+self.src+" \\ \n",
                     " && mkmf_template="+self.template+ " \\ \n"]
-     self.bldCreate=["RUN mkdir -p "+self.bld+" \n",
-                     "COPY Makefile "+self.bld+"/Makefile \n"]
      self.d=open("Dockerfile","w")
      self.d.writelines("FROM "+self.base+" \n")
 ## \brief writes to the checkout part of the Dockerfile and sets up the compile
@@ -46,7 +44,13 @@ class container():
      self.d.write(" && /apps/"+self.e+"/src/checkout.sh \n")
 # Clone mkmf
      self.d.writelines(self.mkmfclone)
-# Set up the bldDir
+## Copies the Makefile into the bldDir in the dockerfile
+## \param self The dockerfile object
+## \param makefileOnDiskPath The path to Makefile on the local disk 
+ def writeDockerfileMakefile(self, makefileOnDiskPath):
+     # Set up the bldDir
+     self.bldCreate=["RUN mkdir -p "+self.bld+" \n",
+                     "COPY "+ makefileOnDiskPath  +" "+self.bld+"/Makefile \n"]
      self.d.writelines(self.bldCreate)
 ## \brief Adds components to the build part of the Dockerfile
 ## \param self The dockerfile object
@@ -89,5 +93,5 @@ class container():
      self.d.close()
      os.system("podman build -f Dockerfile -t "+self.e+":latest")
      os.system("rm -f "+self.e+".tar "+self.e+".sif")
-     os.system("podman save -o "+self.e+".tar localhost/"+self.e)
+     os.system("podman save -o "+self.e+".tar localhost/"+self.e+":latest")
      os.system("apptainer build --disable-cache "+self.e+".sif docker-archive://"+self.e+".tar")

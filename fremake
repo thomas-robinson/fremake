@@ -119,7 +119,7 @@ for platformName in plist:
                freCheckout.run()
 ## Loop through platforms and targets
 for platformName in plist:
-    if freYaml.platforms.hasPlatform(platformName):
+     if freYaml.platforms.hasPlatform(platformName):
           print ("Compiling for platform " + platformName)
      else:
           raise SystemExit (platformName + " does not exist in " + freYaml.platformsfile)
@@ -148,14 +148,22 @@ for platformName in plist:
 #################################### container stuff below ###########################################################
           ## Run the checkout script
           image="hpc-me-intel:2021.1.1"
+          bldDir = modelRoot + "/" + fremakeYaml["experiment"] + "/exec"
           tmpDir = "tmp/"+platformName
           freCheckout = checkoutForContainer("checkout.sh", srcDir, tmpDir)
           freCheckout.writeCheckout(freYaml.compile.getCompileYaml())
           freCheckout.finish()
-          #Get the yaml filled out
+          ## Create the makefile
+          freMakefile = makefileContainer(fremakeYaml["experiment"],srcDir,bldDir,mkTemplate,tmpDir)
+          # Loop through compenents and send the component name and requires for the Makefile
+          for c in fremakeYaml['src']:
+               freMakefile.addComponet(c['component'],c['requires'])
+          freMakefile.writeMakefile()
+          freMakefile.finish()
 ##### NEED MAKEFILE
           dockerBuild = container(image,fremakeYaml["experiment"])
           dockerBuild.writeDockerfileCheckout("checkout.sh", tmpDir+"/checkout.sh")
+          dockerBuild.writeDockerfileMakefile(freMakefile.getTmpDir() + "/Makefile")
           for c in fremakeYaml['src']:
                dockerBuild.writeDockerfileMkmf(c)
           dockerBuild.build()

@@ -73,3 +73,21 @@ class makefile():
 ## \param self The makefile object
  def finish(self):
      self.m.close()
+
+## The makefile class for a container.  It gets built into a temporary directory so it can be copied
+## into the container.
+class makefileContainer(makefile):
+ def __init__(self,exp,srcDir,bldDir,mkTemplate,tmpDir):
+     self.e = exp
+     self.src = srcDir 
+     self.bld =  bldDir
+     self.template = mkTemplate
+     self.tmpDir = tmpDir
+     self.c =[] #components
+     self.r=[] #requires
+     os.system("mkdir -p "+self.bld)
+     self.m=open(self.tmpDir+"/Makefile","w")
+## \return the tmpDir
+## \param self The makefile object
+ def getTmpDir(self):
+     return self.tmpDir
