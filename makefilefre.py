@@ -43,7 +43,7 @@ class makefile():
      self.m.write("MK_TEMPLATE = "+self.template+"\n") 
      self.m.write("include $(MK_TEMPLATE)"+"\n")
 # Write the main experiment compile 
-     self.m.write(self.e+": "+libstring+"\n")
+     self.m.write(self.e+".x: "+libstring+"\n")
      self.m.write("\t$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)"+"\n")
 # Write the individual component library compiles
      for (c,r) in sd:
